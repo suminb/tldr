@@ -1,0 +1,8 @@
+flask>=0.11.1
+JPype1-py3>=0.5.5.2
+konlpy>=0.4.4
+requests>=2.12.1
+textrankr>=0.3
+logbook>=1.0.0
+beautifulsoup4>=4.5.1
+newspaper3k>=0.1.7
