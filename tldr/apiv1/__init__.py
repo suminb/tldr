@@ -14,13 +14,13 @@ log = Logger(__name__)
 log.handlers.append(StreamHandler(sys.stdout, level='INFO'))
 
 
-@apiv1_module.route('/summarize', methods=['POST'])
+@apiv1_module.route('summarize', methods=['POST'])
 def summarize():
     text = request.form['text']
     return summarize_text(text)
 
 
-@apiv1_module.route('/summarize-url', methods=['POST'])
+@apiv1_module.route('summarize-url', methods=['POST'])
 def summarize_url():
     url = request.form['url']
 
@@ -28,10 +28,16 @@ def summarize_url():
     html = fetch_url(url)
 
     log.info('Extracting text from {}', url)
-    text = extract_text(html)
+    text = __extract_text__(html)
 
     log.info('Summarizing text...')
     return summarize_text(text)
+
+
+@apiv1_module.route('extract-text', methods=['POST'])
+def extract_text():
+    html = request.form['html']
+    return __extract_text__(html)
 
 
 def summarize_text(text):
@@ -49,7 +55,11 @@ def fetch_url(url, params={}):
         return resp.content.decode('euc-kr')
 
 
-def extract_text(html):
+def __extract_text__(html):
+    """Extracts text body (an article) from HTML."""
+    # TODO: What's going to happen when no article is found?
+
     # soup = BeautifulSoup(html, 'html.parser')
     # return ' '.join([p.text for p in soup.find_all('p')])
+
     return fulltext(html, 'ko')
