@@ -37,7 +37,12 @@ def summarize_url():
 @apiv1_module.route('extract-text', methods=['POST'])
 def extract_text():
     html = request.form['html']
-    return __extract_text__(html)
+    try:
+        return __extract_text__(html)
+    except AttributeError:
+        # NOTE: When a parsing error occurs, an AttributeError is raised.
+        # We'll deal with this exception later.
+        return ''
 
 
 def summarize_text(text):
