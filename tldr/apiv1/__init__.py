@@ -20,7 +20,7 @@ def summarize():
     return summarize_text(text)
 
 
-@apiv1_module.route('/summarize_url', methods=['POST'])
+@apiv1_module.route('/summarize-url', methods=['POST'])
 def summarize_url():
     url = request.form['url']
 
