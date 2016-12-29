@@ -52,7 +52,8 @@ def extract_text():
     article = Article(html)
     try:
         return article.text
-    except AttributeError:
+    except AttributeError as e:
+        log.warn(e)
         # NOTE: When a parsing error occurs, an AttributeError is raised.
         # We'll deal with this exception later.
         return ''
