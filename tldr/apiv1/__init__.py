@@ -1,13 +1,11 @@
 import sys
 
-from bs4 import BeautifulSoup
 from flask import Blueprint, jsonify, request
 from logbook import Logger, StreamHandler
-from newspaper import fulltext
 import requests
-from textrankr import TextRank
 
 from tldr.models import Article
+from tldr.utils import summarize_text
 
 
 apiv1_module = Blueprint('apiv1', __name__, template_folder='templates')
@@ -51,19 +49,13 @@ def summarize_url():
 @apiv1_module.route('extract-text', methods=['POST'])
 def extract_text():
     html = request.form['html']
+    article = Article(html)
     try:
-        return __extract_text__(html)
+        return article.text
     except AttributeError:
         # NOTE: When a parsing error occurs, an AttributeError is raised.
         # We'll deal with this exception later.
         return ''
-
-
-def summarize_text(text):
-    import jpype
-    jpype.attachThreadToJVM()
-    textrank = TextRank(text)
-    return textrank.summarize()
 
 
 def fetch_url(url, params={}):
@@ -72,18 +64,3 @@ def fetch_url(url, params={}):
         return resp.content.decode('utf-8')
     except UnicodeDecodeError:
         return resp.content.decode('euc-kr')
-
-
-def __extract_title__(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup.title.get_text()
-
-
-def __extract_text__(html):
-    """Extracts text body (an article) from HTML."""
-    # TODO: What's going to happen when no article is found?
-
-    # soup = BeautifulSoup(html, 'html.parser')
-    # return ' '.join([p.text for p in soup.find_all('p')])
-
-    return fulltext(html, 'ko')

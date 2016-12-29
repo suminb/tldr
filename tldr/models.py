@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
-import jpype
 from newspaper import fulltext
-from textrankr import TextRank
+
+from tldr.utils import summarize_text
 
 
 class Article(object):
@@ -57,9 +57,7 @@ class Article(object):
     @property
     def summary(self):
         if self._summary is None:
-            jpype.attachThreadToJVM()
-            textrank = TextRank(self.text)
-            self._summary = textrank.summarize()
+            self._summary = summarize_text(self.text)
         return self._summary
 
     def as_dict(self):
