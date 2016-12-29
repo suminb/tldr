@@ -1,7 +1,7 @@
 import sys
 
-# from bs4 import BeautifulSoup
-from flask import Blueprint, request
+from bs4 import BeautifulSoup
+from flask import Blueprint, jsonify, request
 from logbook import Logger, StreamHandler
 from newspaper import fulltext
 import requests
@@ -14,6 +14,16 @@ log = Logger(__name__)
 log.handlers.append(StreamHandler(sys.stdout, level='INFO'))
 
 
+# TODO: Make this more generic
+# TODO: Move elsewhere
+def json_requested():
+    best = request.accept_mimetypes \
+        .best_match(['application/json', 'text/plain'])
+    return best == 'application/json' and \
+        request.accept_mimetypes[best] > \
+        request.accept_mimetypes['text/plain']
+
+
 @apiv1_module.route('summarize', methods=['POST'])
 def summarize():
     text = request.form['text']
@@ -23,15 +33,34 @@ def summarize():
 @apiv1_module.route('summarize-url', methods=['POST'])
 def summarize_url():
     url = request.form['url']
+    data = __summarize_url__(url)
 
+    if json_requested():
+        return jsonify(data)
+    else:
+        return data['summary']
+
+
+def __summarize_url__(url):
     log.info('Fetching url {}', url)
     html = fetch_url(url)
+
+    log.info('Extracting title...')
+    title = __extract_title__(html)
 
     log.info('Extracting text from {}', url)
     text = __extract_text__(html)
 
     log.info('Summarizing text...')
-    return summarize_text(text)
+    summary = summarize_text(text)
+
+    return {
+        'url': url,
+        'html': html,
+        'text': text,
+        'title': title,
+        'summary': summary,
+    }
 
 
 @apiv1_module.route('extract-text', methods=['POST'])
@@ -58,6 +87,11 @@ def fetch_url(url, params={}):
         return resp.content.decode('utf-8')
     except UnicodeDecodeError:
         return resp.content.decode('euc-kr')
+
+
+def __extract_title__(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    return soup.title.get_text()
 
 
 def __extract_text__(html):
