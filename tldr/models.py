@@ -42,7 +42,19 @@ class Article(object):
 
     @property
     def canonical_url(self):
-        raise NotImplementedError()
+        soup = self.init_soup()
+        link = soup.find('link', {'rel': 'canonical'})
+        if link is None:
+            # NOTE: Should we return None or raise an error?
+            # raise ValueError('Canonical URL not found')
+            return None
+
+        href = link.get('href')
+        if href is None:
+            # raise ValueError('Canonical URL not found')
+            return None
+
+        return href
 
     # TODO: Make @cached_property
     @property
@@ -61,5 +73,5 @@ class Article(object):
         return self._summary
 
     def as_dict(self):
-        keys = ['title', 'html', 'text', 'summary']
+        keys = ['canonical_url', 'title', 'html', 'text', 'summary']
         return {key: getattr(self, key) for key in keys}
