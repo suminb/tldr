@@ -40,6 +40,9 @@ def summarize_url():
     article = Article(html)
 
     if json_requested():
+        data = article.as_dict()
+        if data['canonical_url'] is None:
+            data['canonical_url'] = url
         return jsonify(article.as_dict())
     else:
         headers = {'Content-Type': 'text/plain; charset=utf-8'}
