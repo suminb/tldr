@@ -7,6 +7,8 @@ from newspaper import fulltext
 import requests
 from textrankr import TextRank
 
+from tldr.models import Article
+
 
 apiv1_module = Blueprint('apiv1', __name__, template_folder='templates')
 
@@ -33,35 +35,17 @@ def summarize():
 @apiv1_module.route('summarize-url', methods=['POST'])
 def summarize_url():
     url = request.form['url']
-    data = __summarize_url__(url)
 
-    if json_requested():
-        return jsonify(data)
-    else:
-        headers = {'Content-Type': 'text/plain; charset=utf-8'}
-        return data['summary'], 200, headers
-
-
-def __summarize_url__(url):
     log.info('Fetching url {}', url)
     html = fetch_url(url)
 
-    log.info('Extracting title...')
-    title = __extract_title__(html)
+    article = Article(html)
 
-    log.info('Extracting text from {}', url)
-    text = __extract_text__(html)
-
-    log.info('Summarizing text...')
-    summary = summarize_text(text)
-
-    return {
-        'url': url,
-        'html': html,
-        'text': text,
-        'title': title,
-        'summary': summary,
-    }
+    if json_requested():
+        return jsonify(article.as_dict())
+    else:
+        headers = {'Content-Type': 'text/plain; charset=utf-8'}
+        return article.summary, 200, headers
 
 
 @apiv1_module.route('extract-text', methods=['POST'])
