@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __author__ = 'Sumin Byeon'
 __email__ = 'suminb@gmail.com'
 
