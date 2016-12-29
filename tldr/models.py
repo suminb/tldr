@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
-from newspaper import fulltext
 
-from tldr.utils import summarize_text
+from tldr.utils import extract_text, summarize_text
 
 
 class Article(object):
@@ -63,7 +62,7 @@ class Article(object):
         # FIXME: What's going to happen when no article is found?
 
         if self._text is None:
-            self._text = fulltext(self.html, 'ko')
+            self._text = extract_text(self.html)
         return self._text
 
     @property
