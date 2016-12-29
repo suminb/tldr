@@ -1,17 +1,27 @@
 import sys
 
-# from bs4 import BeautifulSoup
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 from logbook import Logger, StreamHandler
-from newspaper import fulltext
 import requests
-from textrankr import TextRank
+
+from tldr.models import Article
+from tldr.utils import summarize_text
 
 
 apiv1_module = Blueprint('apiv1', __name__, template_folder='templates')
 
 log = Logger(__name__)
 log.handlers.append(StreamHandler(sys.stdout, level='INFO'))
+
+
+# TODO: Make this more generic
+# TODO: Move elsewhere
+def json_requested():
+    best = request.accept_mimetypes \
+        .best_match(['application/json', 'text/plain'])
+    return best == 'application/json' and \
+        request.accept_mimetypes[best] > \
+        request.accept_mimetypes['text/plain']
 
 
 @apiv1_module.route('summarize', methods=['POST'])
@@ -27,29 +37,29 @@ def summarize_url():
     log.info('Fetching url {}', url)
     html = fetch_url(url)
 
-    log.info('Extracting text from {}', url)
-    text = __extract_text__(html)
+    article = Article(html)
 
-    log.info('Summarizing text...')
-    return summarize_text(text)
+    if json_requested():
+        data = article.as_dict()
+        if data['canonical_url'] is None:
+            data['canonical_url'] = url
+        return jsonify(article.as_dict())
+    else:
+        headers = {'Content-Type': 'text/plain; charset=utf-8'}
+        return article.summary, 200, headers
 
 
 @apiv1_module.route('extract-text', methods=['POST'])
 def extract_text():
     html = request.form['html']
+    article = Article(html)
     try:
-        return __extract_text__(html)
-    except AttributeError:
+        return article.text
+    except AttributeError as e:
+        log.warn(e)
         # NOTE: When a parsing error occurs, an AttributeError is raised.
         # We'll deal with this exception later.
         return ''
-
-
-def summarize_text(text):
-    import jpype
-    jpype.attachThreadToJVM()
-    textrank = TextRank(text)
-    return textrank.summarize()
 
 
 def fetch_url(url, params={}):
@@ -58,13 +68,3 @@ def fetch_url(url, params={}):
         return resp.content.decode('utf-8')
     except UnicodeDecodeError:
         return resp.content.decode('euc-kr')
-
-
-def __extract_text__(html):
-    """Extracts text body (an article) from HTML."""
-    # TODO: What's going to happen when no article is found?
-
-    # soup = BeautifulSoup(html, 'html.parser')
-    # return ' '.join([p.text for p in soup.find_all('p')])
-
-    return fulltext(html, 'ko')

@@ -1,0 +1,19 @@
+sudo: false
+
+language: python
+python:
+  - "3.5"
+
+env:
+  global:
+    - PYTHONPATH=.
+
+install:
+  - pip install -r requirements.txt
+  - pip install -r tests/requirements.txt
+
+script:
+  - py.test -v tests --cov tldr --cov-report term-missing
+
+after_success:
+  - coveralls
