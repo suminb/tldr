@@ -38,7 +38,8 @@ def summarize_url():
     if json_requested():
         return jsonify(data)
     else:
-        return data['summary']
+        headers = {'Content-Type': 'text/plain; charset=utf-8'}
+        return data['summary'], 200, headers
 
 
 def __summarize_url__(url):
