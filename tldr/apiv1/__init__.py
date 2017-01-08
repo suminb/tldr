@@ -35,15 +35,14 @@ def summarize_url():
     url = request.form['url']
 
     log.info('Fetching url {}', url)
-    html = fetch_url(url)
+    resp, html = fetch_url(url)
 
     article = Article(html)
 
     if json_requested():
         data = article.as_dict()
-        if data['canonical_url'] is None:
-            data['canonical_url'] = url
-        return jsonify(article.as_dict())
+        data['url'] = resp.url
+        return jsonify(data)
     else:
         headers = {'Content-Type': 'text/plain; charset=utf-8'}
         return article.summary, 200, headers
@@ -65,6 +64,6 @@ def extract_text():
 def fetch_url(url, params={}):
     resp = requests.get(url, params=params)
     try:
-        return resp.content.decode('utf-8')
+        return resp, resp.content.decode('utf-8')
     except UnicodeDecodeError:
-        return resp.content.decode('euc-kr')
+        return resp, resp.content.decode('euc-kr')
