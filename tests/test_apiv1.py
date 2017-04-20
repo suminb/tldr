@@ -8,6 +8,18 @@ def test_extract_text(testapp):
     assert resp.data.decode('utf-8') == 'Some text'
 
 
+def test_extract_test_long(testapp):
+    with open('tests/samples/go-resolutions.html') as fin:
+        html = fin.read()
+
+    resp = testapp.post('/api/v1/extract-text', data={'html': html})
+    assert resp.status_code == 200
+
+    text = resp.data.decode('utf-8')
+    assert text.startswith('My Go Resolutions for 2017')
+    assert text.endswith('I understand the solution space better.')
+
+
 # TODO: Need to test against longer text
 def test_summarize_text(testapp):
     text = 'This is some sample text'
