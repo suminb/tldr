@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 
@@ -8,16 +10,22 @@ def test_extract_text(testapp):
     assert resp.data.decode('utf-8') == 'Some text'
 
 
-def test_extract_test_long(testapp):
-    with open('tests/samples/go-resolutions.html') as fin:
+@pytest.mark.parametrize('filename, start, end', [
+    ('go-resolutions.html',
+     'My Go Resolutions for 2017',
+     'I understand the solution space better.')
+])
+def test_extract_test_long(testapp, filename, start, end):
+    path = os.path.join('tests', 'samples', 'test_apiv1', filename)
+    with open(path) as fin:
         html = fin.read()
 
     resp = testapp.post('/api/v1/extract-text', data={'html': html})
     assert resp.status_code == 200
 
     text = resp.data.decode('utf-8')
-    assert text.startswith('My Go Resolutions for 2017')
-    assert text.endswith('I understand the solution space better.')
+    assert text.startswith(start)
+    assert text.endswith(end)
 
 
 # TODO: Need to test against longer text
