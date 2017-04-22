@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 __author__ = 'Sumin Byeon'
 __email__ = 'suminb@gmail.com'
 
@@ -18,9 +18,5 @@ def create_app(name=__name__, config={}, static_folder='static',
 
     from tldr.apiv1 import apiv1_module
     app.register_blueprint(apiv1_module, url_prefix='/api/v1/')
-
-    @app.route('/')
-    def index():
-        return ''
 
     return app
