@@ -19,8 +19,4 @@ def create_app(name=__name__, config={}, static_folder='static',
     from tldr.apiv1 import apiv1_module
     app.register_blueprint(apiv1_module, url_prefix='/api/v1/')
 
-    @app.route('/')
-    def index():
-        return ''
-
     return app
