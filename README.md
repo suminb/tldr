@@ -1,3 +1,6 @@
+[![Travis](https://img.shields.io/travis/suminb/tldr.svg)](https://travis-ci.org/suminb/tldr)
+[![Coveralls](https://img.shields.io/coveralls/suminb/tldr.svg)](https://coveralls.io/github/suminb/tldr)
+
 TL;DR
 -----
 TL;DR, which stands for "Too Long; Didn't Read", is a text summarization service.
